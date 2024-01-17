@@ -15,7 +15,7 @@ export type SafeBoard = Omit<Board, "createdAt" | "updatedAt"> & {
 };
 
 // 게시판 리스트 타입
-export type SafeBoards = Omit<SafeBoard, "content">[];
+export type SafeBoards = SafeBoard[];
 
 // 상태타입
 export type Status = {

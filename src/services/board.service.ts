@@ -1,16 +1,21 @@
 import { Types } from "mongoose";
 import { BoardModal } from "../models";
-import { Status, SafeBoard, ReqQuery, ReqParams, ReqBody } from "../types/types";
+import {
+  Status,
+  SafeBoard,
+  ReqQuery,
+  ReqParams,
+  ReqBody,
+} from "../types/types";
 import CustomError from "../utils/CustomError";
 
 const listBoards = async (query: ReqQuery) => {
   try {
     const items = await BoardModal.find({}).exec();
     return items.map((item) => {
-      const { content, ...res } = item.toObject();
-      const data: Omit<SafeBoard, "content"> = {
-        ...res,
-        id: res._id.toString(),
+      const data: SafeBoard = {
+        ...item.toObject(),
+        id: item._id.toString(),
         createdAt: item.createdAt.getTime(),
         updatedAt: item.updatedAt?.getTime() ?? null,
       };
@@ -36,8 +41,8 @@ const readBoard = async (params: ReqParams) => {
         ...item.toObject(),
         id: item._id.toString(),
         createdAt: item.toObject().createdAt.getTime(),
-        updatedAt: item.toObject().updatedAt?.getTime() ?? null
-      }
+        updatedAt: item.toObject().updatedAt?.getTime() ?? null,
+      };
       return data;
     }
   } catch (error) {
@@ -56,7 +61,7 @@ const createBoard = async (body: ReqBody) => {
     const boardModal = new BoardModal({
       title,
       content,
-      username: username || "admin"
+      username: username || "admin",
     });
 
     const data = await boardModal.save();
@@ -81,9 +86,15 @@ const updateBoard = async (id: string, body: ReqBody) => {
     if (!title) throw new CustomError("제목을 입력해 주세요.", 400);
     if (!content) throw new CustomError("내용을 입력해 주세요.", 400);
 
-    const res = await BoardModal.updateOne({ _id: id }, { title, content, updatedAt: new Date() });
+    const res = await BoardModal.updateOne(
+      { _id: id },
+      { title, content, updatedAt: new Date() }
+    );
     if (res.modifiedCount === 0) {
-      throw new CustomError("게시글을 찾을 수 없거나 업데이트되지 않았습니다.", 404);
+      throw new CustomError(
+        "게시글을 찾을 수 없거나 업데이트되지 않았습니다.",
+        404
+      );
     }
 
     return { status: "success", message: "게시글 수정 성공!!!" };
@@ -112,7 +123,6 @@ const deleteBoard = async (id: string) => {
     }
   }
 };
-
 
 export default {
   listBoards,
