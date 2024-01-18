@@ -2,11 +2,13 @@ import express, { NextFunction, Request, Response } from "express";
 import cors from "cors";
 import "dotenv/config";
 import mongoose from "mongoose";
-const { MONGO_USER, MONGO_PASS } = process.env;
-const port = 4500;
+const { MONGO_USER, MONGO_PASS, PORT } = process.env;
+import cookieParser from "cookie-parser";
 
 import boardRouter from "./src/routes/boards";
 import CustomError from "./src/utils/CustomError";
+
+import userController from "./src/controllers/users.controller";
 
 const app = express();
 
@@ -18,9 +20,22 @@ mongoose.connection.on("connected", () => {
   console.log("Successfully connected to MongoDB");
 });
 
-app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST"],
+    credentials: true,
+  })
+);
+
+app.post("/login", userController.login);
+app.get("/accesstoken", userController.accessToken);
+app.get("/refreshtoken", userController.refreshToken);
+app.get("/login/success", userController.loginSuccess);
+app.post("/logout", userController.logout);
 
 app.use("/api/boards", boardRouter);
 app.use((err: CustomError, req: Request, res: Response, next: NextFunction) => {
@@ -32,6 +47,6 @@ app.use((err: CustomError, req: Request, res: Response, next: NextFunction) => {
   });
 });
 
-app.listen(port, () => {
-  console.log(`Listening on port ${port}`);
+app.listen(PORT, () => {
+  console.log(`Listening on port ${PORT}`);
 });
