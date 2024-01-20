@@ -12,24 +12,8 @@ const { ACCESS_SECRET, REFRESH_SECRET } = process.env;
 let acc: string = ACCESS_SECRET as string;
 let ref: string = REFRESH_SECRET as string;
 
-// export type ControllerFunction = (
-//   req: Request<ReqParams, ResBody, ReqBody, ReqQuery>,
-//   res: Response,
-//   next: NextFunction
-// ) => void;
-
-// const create: login = async (req, res) => {};
-
-// const read: accessToken = async (req, res) => {};
-
-// const read: refreshToken = async (req, res) => {};
-
-// const read: loginSuccess = async (req, res) => {};
-
-// const create: logout = async (req, res) => {};
-
 const login = (req: Request, res: Response, next: NextFunction) => {
-  const { email, password } = req.body;
+  const { email } = req.body;
 
   const userInfo = userDatabase.filter((item) => {
     return item.email === email;
@@ -70,7 +54,10 @@ const login = (req: Request, res: Response, next: NextFunction) => {
         httpOnly: true,
       });
 
-      res.status(200).json("login success");
+      res.status(200).json({
+        message: "login success",
+        user: { email: userInfo.email, username: userInfo.username },
+      });
     } catch (err) {
       res.status(500).json(err);
     }
@@ -88,7 +75,7 @@ const accessToken = async (req: Request, res: Response) => {
     })[0];
     const { password, ...others } = userData;
 
-    res.status(200).json(userData);
+    res.status(200).json({ email: data.email, username: data.username });
   } catch (err) {
     res.status(500).json(err);
   }
@@ -129,7 +116,7 @@ const loginSuccess = async (req: Request, res: Response) => {
       return item.email === data.email;
     })[0];
 
-    res.status(200).json(userData);
+    res.status(200).json({ email: data.email, username: data.username });
   } catch (err) {
     res.status(500).json(err);
   }

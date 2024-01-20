@@ -8,7 +8,7 @@ const BoardSchema = new Schema<Board>({
   },
   thumbnail: {
     type: String,
-    default: "https://picsum.photos/400",
+    default: "https://picsum.photos/600",
   },
   author: {
     type: String,

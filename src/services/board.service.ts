@@ -1,5 +1,5 @@
 import { Types } from "mongoose";
-import { BoardModal } from "../models";
+import { BoardModel } from "../models";
 import {
   Status,
   SafeBoard,
@@ -11,7 +11,7 @@ import CustomError from "../utils/CustomError";
 
 const listBoards = async (query: ReqQuery) => {
   try {
-    const items = await BoardModal.find({}).exec();
+    const items = await BoardModel.find({}).exec();
     return items.map((item) => {
       const data: SafeBoard = {
         ...item.toObject(),
@@ -35,7 +35,7 @@ const readBoard = async (params: ReqParams) => {
       throw new CustomError("유효하지 않은 아이디 형식 입니다.", 404);
     }
 
-    const item = await BoardModal.findById(id).exec();
+    const item = await BoardModel.findById(id).exec();
     if (item) {
       const data: SafeBoard = {
         ...item.toObject(),
@@ -58,13 +58,13 @@ const createBoard = async (body: ReqBody) => {
     if (!title) throw new CustomError("제목을 입력해 주세요.", 400);
     if (!content) throw new CustomError("내용을 입력해 주세요.", 400);
 
-    const boardModal = new BoardModal({
+    const boardModel = new BoardModel({
       title,
       content,
       username: username || "admin",
     });
 
-    const data = await boardModal.save();
+    const data = await boardModel.save();
     if (data) {
       const res: Status = { status: "success", message: "게시글 작성 성공!!!" };
       return res;
@@ -86,7 +86,7 @@ const updateBoard = async (id: string, body: ReqBody) => {
     if (!title) throw new CustomError("제목을 입력해 주세요.", 400);
     if (!content) throw new CustomError("내용을 입력해 주세요.", 400);
 
-    const res = await BoardModal.updateOne(
+    const res = await BoardModel.updateOne(
       { _id: id },
       { title, content, updatedAt: new Date() }
     );
@@ -111,7 +111,7 @@ const deleteBoard = async (id: string) => {
       throw new CustomError("유효하지 않은 아이디 형식입니다.", 404);
     }
 
-    const res = await BoardModal.findByIdAndDelete({ _id: id });
+    const res = await BoardModel.findByIdAndDelete({ _id: id });
     if (!res) {
       throw new CustomError("삭제할 게시글이 존재하지 않습니다.", 400);
     }
