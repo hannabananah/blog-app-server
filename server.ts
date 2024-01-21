@@ -32,6 +32,7 @@ app.use(
 );
 
 app.post("/login", userController.login);
+app.post("/signup", userController.signup);
 app.get("/accesstoken", userController.accessToken);
 app.get("/refreshtoken", userController.refreshToken);
 app.get("/login/success", userController.loginSuccess);

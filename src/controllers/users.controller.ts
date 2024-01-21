@@ -5,7 +5,7 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 interface TokenPayload extends JwtPayload {
   id: string;
   username: string;
-  email: string;
+  userid: string;
 }
 
 const { ACCESS_SECRET, REFRESH_SECRET } = process.env;
@@ -13,23 +13,23 @@ let acc: string = ACCESS_SECRET as string;
 let ref: string = REFRESH_SECRET as string;
 
 const login = (req: Request, res: Response, next: NextFunction) => {
-  const { email } = req.body;
+  const { userid } = req.body;
 
-  const userInfo = userDatabase.filter((item) => {
-    return item.email === email;
+  const data = userDatabase.filter((item) => {
+    return item.userid === userid;
   })[0];
-  console.log(userInfo);
+  console.log(data);
 
-  if (!userInfo) {
+  if (!data) {
     res.status(403).json("Not Authorized");
   } else {
     try {
       // access token 발급
       const accessToken = jwt.sign(
         {
-          id: userInfo.id,
-          username: userInfo.username,
-          email: userInfo.email,
+          id: data.id,
+          username: data.username,
+          userid: data.userid,
         },
         acc,
         { expiresIn: "1m", issuer: "Hannah" }
@@ -37,9 +37,9 @@ const login = (req: Request, res: Response, next: NextFunction) => {
       // refresh token 발급
       const refreshToken = jwt.sign(
         {
-          id: userInfo.id,
-          username: userInfo.username,
-          email: userInfo.email,
+          id: data.id,
+          username: data.username,
+          userid: data.userid,
         },
         ref,
         { expiresIn: "24h", issuer: "Hannah" }
@@ -54,15 +54,62 @@ const login = (req: Request, res: Response, next: NextFunction) => {
         httpOnly: true,
       });
 
-      res.status(200).json({
-        message: "login success",
-        user: { email: userInfo.email, username: userInfo.username },
-      });
+      res.status(200).json({ userid: data.userid, username: data.username });
     } catch (err) {
       res.status(500).json(err);
     }
   }
   next();
+};
+
+const signup = (req: Request, res: Response, next: NextFunction) => {
+  const { userid, password, username } = req.body;
+
+  const existingUser = userDatabase.find((item) => item.userid === userid);
+
+  if (existingUser) {
+    res.status(400).json("이미 존재하는 유저입니다.");
+    return res;
+  }
+
+  const newUser = {
+    id: userDatabase.length + 1,
+    userid,
+    password,
+    username,
+  };
+  userDatabase.push(newUser);
+  console.log("userDatabase", userDatabase);
+
+  const accessToken = jwt.sign(
+    {
+      id: newUser.id,
+      username: newUser.username,
+      userid: newUser.userid,
+    },
+    acc,
+    { expiresIn: "1m", issuer: "Hannah" }
+  );
+  const refreshToken = jwt.sign(
+    {
+      id: newUser.id,
+      username: newUser.username,
+      userid: newUser.userid,
+    },
+    ref,
+    { expiresIn: "24h", issuer: "Hannah" }
+  );
+
+  res.cookie("accessToken", accessToken, {
+    secure: false,
+    httpOnly: true,
+  });
+  res.cookie("refreshToken", refreshToken, {
+    secure: false,
+    httpOnly: true,
+  });
+
+  res.status(201).json({ userid: newUser.userid, username: newUser.username });
 };
 
 const accessToken = async (req: Request, res: Response) => {
@@ -71,11 +118,11 @@ const accessToken = async (req: Request, res: Response) => {
     const data = jwt.verify(token, acc) as TokenPayload;
 
     const userData = userDatabase.filter((item) => {
-      return item.email === data.email;
+      return item.userid === data.userid;
     })[0];
     const { password, ...others } = userData;
 
-    res.status(200).json({ email: data.email, username: data.username });
+    res.status(200).json({ userid: data.userid, username: data.username });
   } catch (err) {
     res.status(500).json(err);
   }
@@ -86,14 +133,14 @@ const refreshToken = async (req: Request, res: Response) => {
     const token = await req.cookies.refreshToken;
     const data = jwt.verify(token, ref) as TokenPayload;
     const userData = userDatabase.filter((item) => {
-      return item.email === data.email;
+      return item.userid === data.userid;
     })[0];
 
     const accessToken = jwt.sign(
       {
         id: userData.id,
         username: userData.username,
-        email: userData.email,
+        userid: userData.userid,
       },
       acc,
       { expiresIn: "1m", issuer: "Hannah" }
@@ -113,10 +160,10 @@ const loginSuccess = async (req: Request, res: Response) => {
     const token = await req.cookies.accessToken;
     const data = jwt.verify(token, ref) as TokenPayload;
     const userData = userDatabase.filter((item) => {
-      return item.email === data.email;
+      return item.userid === data.userid;
     })[0];
 
-    res.status(200).json({ email: data.email, username: data.username });
+    res.status(200).json({ userid: data.userid, username: data.username });
   } catch (err) {
     res.status(500).json(err);
   }
@@ -132,6 +179,7 @@ const logout = async (req: Request, res: Response) => {
 
 export default {
   login,
+  signup,
   accessToken,
   refreshToken,
   loginSuccess,

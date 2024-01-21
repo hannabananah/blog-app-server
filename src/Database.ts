@@ -2,31 +2,31 @@ export default [
   {
     id: 1,
     username: "testuser1",
-    email: "testuser1@gmail.com",
+    userid: "testuser1",
     password: "1111",
   },
   {
     id: 2,
     username: "testuser2",
-    email: "testuser2@gmail.com",
+    userid: "testuser2",
     password: "2222",
   },
   {
     id: 3,
     username: "testuser3",
-    email: "testuser3@gmail.com",
+    userid: "testuser3",
     password: "3333",
   },
   {
     id: 4,
     username: "testuser4",
-    email: "testuser4@gmail.com",
+    userid: "testuser4",
     password: "4444",
   },
   {
     id: 5,
     username: "testuser5",
-    email: "testuser5@gmail.com",
+    userid: "testuser5",
     password: "5555",
   },
 ];
