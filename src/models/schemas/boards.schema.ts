@@ -2,10 +2,6 @@ import { Schema } from "mongoose";
 import { Board } from "../../types/types";
 
 const BoardSchema = new Schema<Board>({
-  id: {
-    type: String,
-    required: true,
-  },
   thumbnail: {
     type: String,
     default: "https://picsum.photos/600",

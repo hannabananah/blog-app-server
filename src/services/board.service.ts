@@ -55,23 +55,39 @@ const readBoard = async (params: ReqParams) => {
 const createBoard = async (body: ReqBody) => {
   try {
     const { title, content, username } = body;
-    if (!title) throw new CustomError("제목을 입력해 주세요.", 400);
-    if (!content) throw new CustomError("내용을 입력해 주세요.", 400);
+    console.log("title, content, username", title, content, username);
+
+    if (!title || !content) {
+      throw new CustomError("제목과 내용을 모두 입력해 주세요.", 400);
+    }
+
+    console.log("Before creating board model:", title, content, username);
 
     const boardModel = new BoardModel({
       title,
       content,
-      username: username || "admin",
+      username: username,
     });
 
+    console.log("Before saving board model:", boardModel);
+
     const data = await boardModel.save();
-    if (data) {
-      const res: Status = { status: "success", message: "게시글 작성 성공!!!" };
-      return res;
+
+    console.log("After saving board model:", data);
+
+    if (!data) {
+      throw new CustomError("게시글 작성에 실패했습니다.", 500);
     }
+
+    const res: Status = { status: "success", message: "게시글 작성 성공!" };
+    return res;
   } catch (error) {
+    console.error("Error during board creation:", error);
+
     if (error instanceof CustomError) {
-      throw new CustomError(error.message, error.statusCode);
+      throw error;
+    } else {
+      throw new CustomError("게시글 작성 중 에러가 발생했습니다.", 500);
     }
   }
 };

@@ -9,9 +9,18 @@ export type Board = {
   content: string;
 };
 
+// User 타입
+export type User = {
+  id: number;
+  username: string;
+  userid: string;
+  password: string;
+};
+
 export type SafeBoard = Omit<Board, "createdAt" | "updatedAt"> & {
   createdAt: number;
   updatedAt: number | null;
+  user: Omit<User, "id">;
 };
 
 // 게시판 리스트 타입
